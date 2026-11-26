@@ -187,7 +187,7 @@ Object.assign(env, {
 const headless = (...args) => runDsh(app, env, cwd, ['headless', '--json', ...args])
 // Launcher options such as --patch precede the profile name.
 const headlessPatched = (patch, ...args) => runDsh(app, env, cwd, ['--profile', 'headless', '--patch', patch, '--json', ...args])
-const step = (label) => process.stdout.write(`  · ${label}\n`)
+const step = (label) => process.stdout.write(`  - ${label}\n`)
 let failed = false
 
 try {

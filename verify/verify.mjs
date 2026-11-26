@@ -191,7 +191,8 @@ const step = (label) => process.stdout.write(`  - ${label}\n`)
 let failed = false
 
 try {
-  console.log(`dsh-no-telemetry verify\n  app: ${app.exe}\n  temp home: ${home}\n  recorder: ${base}\n`)
+  const dshVersion = (await runDsh(app, env, cwd, ['--version'])).stdout.trim() || 'unknown version'
+  console.log(`dsh-no-telemetry verify\n  DeepSeek Harness: ${dshVersion}\n  app: ${app.exe}\n  temp home: ${home}\n  recorder: ${base}\n`)
 
   console.log('[1/3] Stock DeepSeek Harness')
   phase = 'before'
@@ -223,19 +224,26 @@ try {
 
   const before = summarize('before')
   const after = summarize('after')
+  const list = (items, prefix = '') => items.map(item => item.slice(prefix.length)).join(', ') || 'none'
+  const yesNo = value => (value ? 'yes' : 'no')
+  const count = value => (value > 0 ? `yes (${value})` : 'no')
   const rows = [
-    ['DeepSeek model requests seen', before.model, after.model, after.model > 0],
-    ['dsh_* request fields', before.fields.join(', ') || 'none', after.fields.join(', ') || 'none', after.fields.length === 0],
-    ['x-deepseek-harness-* headers', before.headers.join(', ') || 'none', after.headers.join(', ') || 'none', after.headers.length === 0],
-    ['Off-period backlog uploaded later', uploaded('before', 'MARKER-CONTROL'), uploaded('after', 'MARKER-BACKLOG'), !uploaded('after', 'MARKER-BACKLOG')],
-    ['Fork re-uploads inherited history', before.forked, after.forked, after.forked === 0],
-    ['Feedback OTLP uploads', before.otlp, after.otlp, after.otlp === 0],
-  ]
+    ['Model requests still work', `${before.model} requests`, `${after.model} requests`, after.model > 0],
+    ['dsh_* request fields', list(before.fields), list(after.fields), after.fields.length === 0],
+    ['x-deepseek-harness-* headers', list(before.headers, 'x-deepseek-harness-'), list(after.headers, 'x-deepseek-harness-'), after.headers.length === 0],
+    ['Off-period backlog backfilled', yesNo(uploaded('before', 'MARKER-CONTROL')), yesNo(uploaded('after', 'MARKER-BACKLOG')), !uploaded('after', 'MARKER-BACKLOG')],
+    ['Fork re-uploads history', count(before.forked), count(after.forked), after.forked === 0],
+    ['Feedback uploads session', count(before.otlp), count(after.otlp), after.otlp === 0],
+  ].map(([label, was, now, pass]) => [label, String(was), String(now), pass ? 'PASS' : 'FAIL'])
+  const header = ['Check', 'Stock DSH', 'With dsh-no-telemetry', 'Result']
+  const widths = header.map((title, column) => Math.max(title.length, ...rows.map(row => row[column].length)))
+  const line = cells => `  ${cells.map((cell, column) => cell.padEnd(widths[column])).join('  ')}`.trimEnd()
   console.log('\nResult')
-  console.log('  check | stock | with bundle | pass')
-  for (const [label, was, now, pass] of rows) {
-    console.log(`  ${label} | ${was} | ${now} | ${pass ? 'PASS' : 'FAIL'}`)
-    if (!pass) failed = true
+  console.log(line(header))
+  console.log(line(widths.map(width => '-'.repeat(width))))
+  for (const row of rows) {
+    console.log(line(row))
+    if (row[3] !== 'PASS') failed = true
   }
   const baseline = before.fields.length > 0 && before.headers.length > 0 && before.otlp > 0 && before.forked > 0
     && uploaded('before', 'MARKER-CONTROL')
@@ -244,14 +252,15 @@ try {
     console.log('  prove less than they appear to. Your DSH version may differ from the tested one (0.2.2-rc.5).')
   }
   writeFileSync(join(root, 'captured.json'), JSON.stringify(captured, null, 2))
-  console.log(`\nCaptured requests: ${join(root, 'captured.json')}`)
-  console.log(failed ? '\nFAILED: something still leaves the process. Please open an issue with captured.json.' : '\nPASSED')
+  console.log(failed
+    ? '\nFAILED: something still leaves the process. Please open an issue with captured.json.'
+    : `\nPASSED: all ${rows.length} checks (DeepSeek Harness ${dshVersion})`)
 } catch (error) {
   failed = true
   console.error(`\nverify aborted: ${error instanceof Error ? error.message : String(error)}`)
 } finally {
   server.close()
   if (process.env.DSH_KEEP_TEMP !== '1' && !failed) rmSync(root, { recursive: true, force: true })
-  else console.log(`Temporary files kept at ${root}`)
+  else console.log(`Temporary files and captured.json kept at ${root}`)
 }
 process.exit(failed ? 1 : 0)

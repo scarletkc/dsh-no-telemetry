@@ -1,6 +1,6 @@
 # dsh-no-telemetry
 
-[English](README.md) | **中文**
+[English](https://github.com/scarletkc/dsh-no-telemetry/blob/main/README.md) | **中文**
 
 这是一个 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的 bundle，会关闭 DSH 里我能找到的全部遥测和会话日志上传，并去掉 DSH 加在 DeepSeek API 请求上的身份请求头。仓库附带一个在沙盒里抓包的验证脚本，效果可以自己检查，不用只听我说。
 

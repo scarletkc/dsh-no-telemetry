@@ -1,6 +1,6 @@
 # dsh-no-telemetry
 
-**English** | [中文](README.zh.md)
+**English** | [中文](https://github.com/scarletkc/dsh-no-telemetry/blob/main/README.zh.md)
 
 A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) bundle that turns off every telemetry and session-log upload path I could find in DSH. It also strips the identity headers DSH adds to DeepSeek API requests. It ships with a verify script that captures packets in a sandbox, so you can check the result yourself instead of taking my word for it.
 

@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "No telemetry",
-    "description": "Turns off session-log uploads, the installed-plugin inventory, feedback session uploads, and Desktop product analytics, and removes the x-deepseek-harness-* identity headers and dsh_* request fields from DeepSeek API requests. Conversations collected while the in-app upload toggle was off are never backfilled, and forks never re-upload history. Restart DeepSeek Harness after installing. Removing this bundle restores the shipped behavior, including any pending backlog. Not covered: update checks, DeepSeek account sign-in device details, and what any API server can see (IP address, API key, and the request itself). Tested with DeepSeek Harness 0.2.2-rc.5; run the repository's verify script after each update."
+    "description": "Turns off session-log uploads (including the off-period backlog and fork re-uploads), the plugin inventory, feedback uploads, and Desktop analytics, and strips identity headers from DeepSeek API requests. Restart after installing. Does not cover update checks, account sign-in device info, or what API servers see anyway."
   }
 }

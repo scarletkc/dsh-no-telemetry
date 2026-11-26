@@ -1,0 +1,59 @@
+# dsh-no-telemetry
+#
+# Applied as a bundle layer after the shipped bundles, so these overrides win
+# over the shipped defaults. The settings page edits a row's `config`, never
+# its `disabled` flag, so no in-app toggle can switch these rows back on.
+# Rows absent from a profile (the desktop-only analytics rows in a CLI
+# profile, for example) are reported by the Loader as "no matching row" and
+# skipped; that warning is expected.
+#
+# Tested against DeepSeek Harness 0.2.2-rc.5. Run verify/ after every DSH
+# update: a renamed or newly added row is not covered until this file is
+# updated.
+
+# ── Layer 1: DeepSeek API request extensions ────────────────────────────────
+# The registry that lets plugins add top-level fields to official DeepSeek
+# requests. The adapter looks it up optionally, so with the registry gone it
+# sends no extension fields at all. The only two contributors in 0.2.2-rc.5,
+# `dsh_session_log` (full session log, including the backlog collected while
+# the in-app toggle was off, and full re-uploads after a fork) and
+# `dsh_plugin_packages` (every installed plugin with its version), cannot
+# start without it. They are also disabled by name as a second guard.
+- id: deepseek-llm-api-extensions
+  disabled: true
+
+- id: session-log-deepseek
+  disabled: true
+
+- id: plugin-package-inventory-deepseek
+  disabled: true
+
+# ── Layer 2: OpenTelemetry exporters ────────────────────────────────────────
+# session-telemetry-otel: uploads the whole session when you submit feedback,
+#   whichever model provider the session used.
+# product-analytics / desktop-product-telemetry: Desktop usage events
+#   (model names, hardware details, account and device ids).
+# otel: the shared OTLP service both of them use. It has no other consumer.
+- id: session-telemetry-otel
+  disabled: true
+
+- id: product-analytics
+  disabled: true
+
+- id: desktop-product-telemetry
+  disabled: true
+
+- id: otel
+  disabled: true
+
+# ── Layer 3: fetch guard ────────────────────────────────────────────────────
+# Removes the hard-coded x-deepseek-harness-* headers (anonymous user id,
+# session id) and any top-level `dsh_*` request field, and refuses fetch
+# requests to the telemetry domain. A second line of defense for fields that a
+# future release might add.
+- insert:
+    - id: no-telemetry-fetch-guard
+      name: dsh-no-telemetry
+      config:
+        blockedHosts:
+          - deepseeksvc.com

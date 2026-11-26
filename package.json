@@ -1,0 +1,32 @@
+{
+  "name": "dsh-no-telemetry",
+  "version": "0.1.0",
+  "description": "Turns off every telemetry and session-log upload path in DeepSeek Harness, and strips identifying headers from DeepSeek API requests.",
+  "type": "module",
+  "license": "MIT",
+  "author": "ScarletKc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ScarletKc/dsh-no-telemetry.git"
+  },
+  "keywords": ["deepseek-harness", "dsh", "dsh-bundle", "privacy", "telemetry"],
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
